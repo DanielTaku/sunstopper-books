@@ -3,11 +3,13 @@
    Sections: Hero | Stats | Library | About | Contact | Footer
    ============================================================ */
 
-import { useState, useEffect, useRef } from "react";
-import { BookOpen, Download, Star, Users, ChevronDown, Mail, Phone, Globe, Search, X } from "lucide-react";
+import { useState, useEffect, useRef, useMemo } from "react";
+import { BookOpen, Download, Star, Users, ChevronDown, Mail, Phone, Globe, Search, X, Loader2 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import BookCard from "@/components/BookCard";
-import { books, categories } from "@/lib/books";
+import { useAuth } from "@/_core/hooks/useAuth";
+import { trpc } from "@/lib/trpc";
+import type { DbBook } from "@/components/BookCard";
 
 const HERO_BG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663580421822/BJ5mVUkgGhXniFm8HpxpPF/hero-bg-Jk3ngQtUXX3qTADHb32uVk.webp";
 const TEXTURE_BG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663580421822/BJ5mVUkgGhXniFm8HpxpPF/banner-texture-nHAuis5hmyNhVXdTCWMYwn.webp";
@@ -32,25 +34,32 @@ function useInView(threshold = 0.1) {
 }
 
 export default function Home() {
+  const { user } = useAuth();
+  const { data: dbBooks = [], isLoading: booksLoading } = trpc.books.list.useQuery();
+  const recordDownload = trpc.books.recordDownload.useMutation();
+
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
-  const [totalDownloads] = useState(2847);
 
   const { ref: statsRef, inView: statsInView } = useInView();
   const { ref: libraryRef, inView: libraryInView } = useInView();
   const { ref: aboutRef, inView: aboutInView } = useInView();
 
-  const filteredBooks = books.filter((book) => {
+  // Derive categories from DB books
+  const categories = useMemo(() => Array.from(new Set(dbBooks.map((b) => b.category).filter(Boolean))) as string[], [dbBooks]);
+  const totalDownloads = useMemo(() => dbBooks.reduce((sum, b) => sum + (b.downloadCount ?? 0), 0), [dbBooks]);
+
+  const filteredBooks = dbBooks.filter((book) => {
     const matchesSearch =
       !searchQuery ||
       book.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       book.author.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      book.description.toLowerCase().includes(searchQuery.toLowerCase());
+      (book.description ?? "").toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = !activeCategory || book.category === activeCategory;
     return matchesSearch && matchesCategory;
   });
 
-  const featuredBooks = books.filter((b) => b.featured);
+  const featuredBooks = dbBooks.filter((b) => b.featured === "1");
 
   return (
     <div className="min-h-screen bg-[oklch(0.97_0.015_85)]">
@@ -137,7 +146,7 @@ export default function Home() {
               style={{ animationFillMode: "forwards" }}
             >
               {[
-                { value: books.length, label: "Books Available" },
+                { value: dbBooks.length, label: "Books Available" },
                 { value: `${totalDownloads.toLocaleString()}+`, label: "Downloads" },
                 { value: "100%", label: "Free" },
               ].map((stat) => (
@@ -170,7 +179,7 @@ export default function Home() {
                 style={{ transform: i === 0 ? "rotate(-2deg)" : "rotate(2deg)" }}
               >
                 <img
-                  src={book.coverUrl}
+                  src={book.coverUrl ?? undefined}
                   alt={book.title}
                   className="w-full h-full object-cover object-top"
                 />
@@ -212,7 +221,7 @@ export default function Home() {
         <div className="container mx-auto px-4 lg:px-8 relative z-10">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {[
-              { icon: BookOpen, value: books.length, label: "Books in Library", suffix: "" },
+              { icon: BookOpen, value: dbBooks.length, label: "Books in Library", suffix: "" },
               { icon: Download, value: totalDownloads, label: "Total Downloads", suffix: "+" },
               { icon: Star, value: 100, label: "Free to Access", suffix: "%" },
               { icon: Users, value: 12, label: "Countries Reached", suffix: "+" },
@@ -323,24 +332,41 @@ export default function Home() {
           </div>
 
           {/* Books Grid */}
-          {filteredBooks.length > 0 ? (
+          {booksLoading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="bg-white rounded-lg overflow-hidden shadow-md border border-[oklch(0.87_0.025_80)] animate-pulse">
+                  <div className="aspect-[3/4] bg-[oklch(0.93_0.02_85)]" />
+                  <div className="p-5 space-y-3">
+                    <div className="h-5 bg-[oklch(0.93_0.02_85)] rounded w-3/4" />
+                    <div className="h-3 bg-[oklch(0.93_0.02_85)] rounded w-1/2" />
+                    <div className="h-3 bg-[oklch(0.93_0.02_85)] rounded w-full" />
+                    <div className="h-3 bg-[oklch(0.93_0.02_85)] rounded w-full" />
+                    <div className="h-9 bg-[oklch(0.93_0.02_85)] rounded mt-4" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : filteredBooks.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {filteredBooks.map((book, i) => (
-                <BookCard key={book.id} book={book} index={i} />
+                <BookCard key={book.id} book={book as DbBook} index={i} onDownload={(id) => recordDownload.mutate({ id })} />
               ))}
             </div>
           ) : (
             <div className="text-center py-20">
               <BookOpen className="w-12 h-12 text-[oklch(0.72_0.12_75/0.4)] mx-auto mb-4" />
               <p className="text-[oklch(0.45_0.03_80)] font-body">
-                No books found matching your search.
+                {searchQuery || activeCategory ? "No books found matching your search." : "No books in the library yet."}
               </p>
-              <button
-                onClick={() => { setSearchQuery(""); setActiveCategory(null); }}
-                className="mt-4 text-[oklch(0.72_0.12_75)] text-sm hover:underline font-body"
-              >
-                Clear filters
-              </button>
+              {(searchQuery || activeCategory) && (
+                <button
+                  onClick={() => { setSearchQuery(""); setActiveCategory(null); }}
+                  className="mt-4 text-[oklch(0.72_0.12_75)] text-sm hover:underline font-body"
+                >
+                  Clear filters
+                </button>
+              )}
             </div>
           )}
         </div>

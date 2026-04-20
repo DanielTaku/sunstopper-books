@@ -4,11 +4,14 @@
    ============================================================ */
 
 import { useState, useEffect } from "react";
-import { BookOpen, Menu, X } from "lucide-react";
+import { BookOpen, Menu, X, Settings } from "lucide-react";
+import { useAuth } from "@/_core/hooks/useAuth";
+import { Link } from "wouter";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const { user } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 40);
@@ -64,6 +67,16 @@ export default function Navbar() {
               {item.label}
             </button>
           ))}
+          {user?.role === "admin" && (
+            <Link
+              href="/admin"
+              className="font-cinzel text-sm text-[oklch(0.72_0.12_75)] hover:text-[oklch(0.85_0.09_80)] transition-colors tracking-widest uppercase flex items-center gap-1"
+              style={{ fontFamily: "'Cinzel', serif" }}
+            >
+              <Settings className="w-3.5 h-3.5" />
+              Admin
+            </Link>
+          )}
           <button
             onClick={() => scrollTo("library")}
             className="download-btn px-5 py-2 rounded text-sm shadow-md"

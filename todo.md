@@ -1,0 +1,24 @@
+# Sun Stopper Books — Full-Stack Upgrade TODO
+
+- [x] Basic homepage layout (Golden Sanctuary design)
+- [x] Navigation menu with smooth scroll
+- [x] Hero section with library background
+- [x] Stats banner
+- [x] Book library grid with search and category filter
+- [x] Book cards with download functionality
+- [x] About section
+- [x] Contact section
+- [x] Footer
+- [x] Upgrade to full-stack (db + server + user)
+- [x] Database schema: books table with storage keys
+- [x] Run db:push to sync schema
+- [x] Backend: storagePut helper for PDF + cover uploads
+- [x] tRPC router: books.list (public), books.upload (admin), books.delete (admin)
+- [x] Seed existing 4 books into database from CDN URLs
+- [x] Admin upload page: upload PDF + cover image, fill metadata
+- [x] Update Home page to fetch books from tRPC instead of static data
+- [x] Update BookCard to use DB-backed download URLs
+- [x] Admin panel route (/admin) with book management table
+- [x] Vitest tests for book router procedures
+- [x] Add loading and empty states to Home page library section
+- [x] Add books.upload vitest coverage
