@@ -35,6 +35,17 @@ interface BookCardProps {
   book: DbBook;
   index: number;
   onDownload?: (id: number) => void;
+  searchTerm?: string;
+}
+
+// Helper to highlight search terms in text
+function highlightText(text: string, searchTerm: string) {
+  if (!searchTerm.trim()) return text;
+  const regex = new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+  const parts = text.split(regex);
+  return parts.map((part, i) => 
+    regex.test(part) ? `<mark key=${i}>${part}</mark>` : part
+  ).join('');
 }
 
 function formatFileSize(bytes?: number | null): string {
@@ -43,7 +54,7 @@ function formatFileSize(bytes?: number | null): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-export default function BookCard({ book, index, onDownload }: BookCardProps) {
+export default function BookCard({ book, index, onDownload, searchTerm }: BookCardProps) {
   const [expanded, setExpanded] = useState(false);
   const [downloading, setDownloading] = useState(false);
 
@@ -146,7 +157,13 @@ export default function BookCard({ book, index, onDownload }: BookCardProps) {
           className="font-display text-xl font-semibold leading-tight text-[oklch(0.15_0.01_60)] mb-1"
           style={{ fontFamily: "'Cormorant Garamond', serif" }}
         >
-          {book.title}
+          {searchTerm ? (
+            <span dangerouslySetInnerHTML={{
+              __html: highlightText(book.title, searchTerm)
+            }} />
+          ) : (
+            book.title
+          )}
         </h3>
         {book.subtitle && (
           <p
@@ -160,7 +177,13 @@ export default function BookCard({ book, index, onDownload }: BookCardProps) {
         {/* Author */}
         <p className="text-[oklch(0.45_0.03_80)] text-xs font-body tracking-wide mb-3 flex items-center gap-1.5">
           <BookOpen className="w-3.5 h-3.5 flex-shrink-0" />
-          {book.author}
+          {searchTerm ? (
+            <span dangerouslySetInnerHTML={{
+              __html: highlightText(book.author, searchTerm)
+            }} />
+          ) : (
+            book.author
+          )}
         </p>
 
         {/* Meta row */}

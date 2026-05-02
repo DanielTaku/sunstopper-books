@@ -247,6 +247,17 @@
     animation: fadeUp 0.6s ease forwards;
   }
 
+  /* Search term highlighting */
+  mark {
+    background-color: oklch(0.72 0.12 75 / 0.25);
+    color: inherit;
+    font-weight: 600;
+    padding: 0 2px;
+    border-radius: 2px;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+  }
+
   /* Stagger delays */
   .delay-100 { animation-delay: 0.1s; }
   .delay-200 { animation-delay: 0.2s; }

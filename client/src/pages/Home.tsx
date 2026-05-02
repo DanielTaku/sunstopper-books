@@ -278,26 +278,32 @@ export default function Home() {
 
           {/* Search & Filter */}
           <div
-            className={`flex flex-col sm:flex-row gap-4 mb-10 ${libraryInView ? "animate-fade-up opacity-0 delay-100" : "opacity-0"}`}
+            className={`flex flex-col gap-4 mb-10 ${libraryInView ? "animate-fade-up opacity-0 delay-100" : "opacity-0"}`}
             style={{ animationFillMode: "forwards" }}
           >
-            {/* Search */}
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[oklch(0.55_0.025_80)]" />
+            {/* Search Bar */}
+            <div className="relative w-full">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[oklch(0.72_0.12_75)]" />
               <input
                 type="text"
-                placeholder="Search by title, author..."
+                placeholder="Search by title, author, or keyword..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-10 py-2.5 rounded border border-[oklch(0.87_0.025_80)] bg-white text-[oklch(0.15_0.01_60)] font-body text-sm focus:outline-none focus:ring-2 focus:ring-[oklch(0.72_0.12_75/0.4)] focus:border-[oklch(0.72_0.12_75)]"
+                className="w-full pl-12 pr-12 py-3 rounded-lg border-2 border-[oklch(0.87_0.025_80)] bg-white text-[oklch(0.15_0.01_60)] font-body text-sm placeholder-[oklch(0.65_0.02_80)] transition-all focus:outline-none focus:ring-0 focus:border-[oklch(0.72_0.12_75)] focus:shadow-lg focus:shadow-[oklch(0.72_0.12_75/0.15)]"
               />
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery("")}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[oklch(0.55_0.025_80)] hover:text-[oklch(0.15_0.01_60)]"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-[oklch(0.55_0.025_80)] hover:text-[oklch(0.27_0.07_155)] transition-colors"
+                  title="Clear search"
                 >
-                  <X className="w-4 h-4" />
+                  <X className="w-5 h-5" />
                 </button>
+              )}
+              {searchQuery && filteredBooks.length > 0 && (
+                <div className="absolute right-14 top-1/2 -translate-y-1/2 text-xs text-[oklch(0.55_0.025_80)] font-medium">
+                  {filteredBooks.length} result{filteredBooks.length !== 1 ? "s" : ""}
+                </div>
               )}
             </div>
 
@@ -350,7 +356,7 @@ export default function Home() {
           ) : filteredBooks.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {filteredBooks.map((book, i) => (
-                <BookCard key={book.id} book={book as DbBook} index={i} onDownload={(id) => recordDownload.mutate({ id })} />
+                <BookCard key={book.id} book={book as DbBook} index={i} onDownload={(id) => recordDownload.mutate({ id })} searchTerm={searchQuery} />
               ))}
             </div>
           ) : (
