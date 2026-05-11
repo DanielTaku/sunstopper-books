@@ -22,3 +22,8 @@
 - [x] Vitest tests for book router procedures
 - [x] Add loading and empty states to Home page library section
 - [x] Add books.upload vitest coverage
+- [x] Implement admin password authentication (2020taku) — JWT-based secure tokens
+- [x] Create admin login page with password gateway — Beautiful login UI at /admin-login
+- [x] Add admin session management with secure cookies — Signed JWT tokens with 24h expiration
+- [x] Protect admin routes with auth middleware — Client-side guard + server-side JWT verification
+- [x] Test admin gateway after deployment — 7 vitest tests covering login/logout/session flow

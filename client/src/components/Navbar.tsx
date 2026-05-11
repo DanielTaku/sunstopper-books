@@ -4,14 +4,19 @@
    ============================================================ */
 
 import { useState, useEffect } from "react";
-import { BookOpen, Menu, X, Settings } from "lucide-react";
+import { BookOpen, Menu, X, Settings, LogIn, LogOut } from "lucide-react";
 import { useAuth } from "@/_core/hooks/useAuth";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
+import { trpc } from "@/lib/trpc";
+import { toast } from "sonner";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const { user } = useAuth();
+  const [, setLocation] = useLocation();
+  const { data: adminSession } = trpc.adminAuth.checkSession.useQuery();
+  const logoutMutation = trpc.adminAuth.logout.useMutation();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 40);
@@ -23,6 +28,16 @@ export default function Navbar() {
     setMenuOpen(false);
     const el = document.getElementById(id);
     if (el) el.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const handleAdminLogout = async () => {
+    try {
+      await logoutMutation.mutateAsync();
+      toast.success("Admin logged out");
+      setLocation("/");
+    } catch (error) {
+      toast.error("Logout failed");
+    }
   };
 
   return (
@@ -67,16 +82,49 @@ export default function Navbar() {
               {item.label}
             </button>
           ))}
-          {user?.role === "admin" && (
+
+          {/* Admin Links */}
+          {adminSession?.isAdmin ? (
+            <>
+              <Link
+                href="/admin"
+                className="font-cinzel text-sm text-[oklch(0.72_0.12_75)] hover:text-[oklch(0.85_0.09_80)] transition-colors tracking-widest uppercase flex items-center gap-1"
+                style={{ fontFamily: "'Cinzel', serif" }}
+              >
+                <Settings className="w-3.5 h-3.5" />
+                Admin
+              </Link>
+              <button
+                onClick={handleAdminLogout}
+                className="font-cinzel text-sm text-[oklch(0.72_0.12_75)] hover:text-[oklch(0.85_0.09_80)] transition-colors tracking-widest uppercase flex items-center gap-1"
+                style={{ fontFamily: "'Cinzel', serif" }}
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                Exit
+              </button>
+            </>
+          ) : (
             <Link
-              href="/admin"
+              href="/admin-login"
               className="font-cinzel text-sm text-[oklch(0.72_0.12_75)] hover:text-[oklch(0.85_0.09_80)] transition-colors tracking-widest uppercase flex items-center gap-1"
               style={{ fontFamily: "'Cinzel', serif" }}
             >
-              <Settings className="w-3.5 h-3.5" />
+              <LogIn className="w-3.5 h-3.5" />
               Admin
             </Link>
           )}
+
+          {user?.role === "admin" && (
+            <Link
+              href="/admin"
+              className="font-cinzel text-sm text-[oklch(0.85_0.02_85)] hover:text-[oklch(0.72_0.12_75)] transition-colors tracking-widest uppercase flex items-center gap-1"
+              style={{ fontFamily: "'Cinzel', serif" }}
+            >
+              <Settings className="w-3.5 h-3.5" />
+              OAuth
+            </Link>
+          )}
+
           <button
             onClick={() => scrollTo("library")}
             className="download-btn px-5 py-2 rounded text-sm shadow-md"
@@ -112,6 +160,38 @@ export default function Navbar() {
               {item.label}
             </button>
           ))}
+
+          {/* Mobile Admin Links */}
+          {adminSession?.isAdmin ? (
+            <>
+              <Link
+                href="/admin"
+                className="text-left font-cinzel text-sm text-[oklch(0.72_0.12_75)] hover:text-[oklch(0.85_0.09_80)] transition-colors tracking-widest uppercase py-2 border-b border-[oklch(0.72_0.12_75/0.1)] flex items-center gap-2"
+                style={{ fontFamily: "'Cinzel', serif" }}
+              >
+                <Settings className="w-3.5 h-3.5" />
+                Admin Panel
+              </Link>
+              <button
+                onClick={handleAdminLogout}
+                className="text-left font-cinzel text-sm text-[oklch(0.72_0.12_75)] hover:text-[oklch(0.85_0.09_80)] transition-colors tracking-widest uppercase py-2 border-b border-[oklch(0.72_0.12_75/0.1)] flex items-center gap-2"
+                style={{ fontFamily: "'Cinzel', serif" }}
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                Exit Admin
+              </button>
+            </>
+          ) : (
+            <Link
+              href="/admin-login"
+              className="text-left font-cinzel text-sm text-[oklch(0.72_0.12_75)] hover:text-[oklch(0.85_0.09_80)] transition-colors tracking-widest uppercase py-2 border-b border-[oklch(0.72_0.12_75/0.1)] flex items-center gap-2"
+              style={{ fontFamily: "'Cinzel', serif" }}
+            >
+              <LogIn className="w-3.5 h-3.5" />
+              Admin Login
+            </Link>
+          )}
+
           <button
             onClick={() => scrollTo("library")}
             className="download-btn px-5 py-2.5 rounded text-sm shadow-md w-full"

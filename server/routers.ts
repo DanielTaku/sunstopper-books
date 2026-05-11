@@ -12,6 +12,7 @@ import {
   incrementDownloadCount,
 } from "./db";
 import { storagePut } from "./storage";
+import { adminAuthRouter } from "./admin-auth";
 
 // Admin guard middleware
 const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
@@ -23,6 +24,8 @@ const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
 
 export const appRouter = router({
   system: systemRouter,
+
+  adminAuth: adminAuthRouter,
 
   auth: router({
     me: publicProcedure.query((opts) => opts.ctx.user),
