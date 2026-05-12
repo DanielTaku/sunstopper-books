@@ -27,3 +27,13 @@
 - [x] Add admin session management with secure cookies — Signed JWT tokens with 24h expiration
 - [x] Protect admin routes with auth middleware — Client-side guard + server-side JWT verification
 - [x] Test admin gateway after deployment — 7 vitest tests covering login/logout/session flow
+- [x] Create analytics data aggregation procedures (downloads by book, daily stats)
+- [x] Build analytics dashboard component with Recharts charts
+- [x] Add download trends chart (line chart over time)
+- [x] Add top books chart (bar chart by downloads)
+- [x] Add engagement metrics (total downloads, unique visitors, search queries)
+- [x] Integrate analytics into admin panel with tabs
+- [x] Test analytics dashboard and save checkpoint
+- [ ] Add persistent analytics/event storage for daily download history
+- [ ] Track unique visitor counts and search query analytics
+- [ ] Add vitest tests for analytics procedures

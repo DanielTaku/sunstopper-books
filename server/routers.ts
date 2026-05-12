@@ -13,6 +13,13 @@ import {
 } from "./db";
 import { storagePut } from "./storage";
 import { adminAuthRouter } from "./admin-auth";
+import {
+  getTopBooks,
+  getEngagementMetrics,
+  getDownloadDistribution,
+  generateDailyDownloadTrend,
+  getAllBooksWithStats,
+} from "./analytics";
 
 // Admin guard middleware
 const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
@@ -26,6 +33,35 @@ export const appRouter = router({
   system: systemRouter,
 
   adminAuth: adminAuthRouter,
+
+  analytics: router({
+    // Get top books by downloads
+    topBooks: publicProcedure
+      .input(z.object({ limit: z.number().default(10) }))
+      .query(async ({ input }) => {
+        return getTopBooks(input.limit);
+      }),
+
+    // Get engagement metrics
+    metrics: publicProcedure.query(async () => {
+      return getEngagementMetrics();
+    }),
+
+    // Get download distribution for charts
+    distribution: publicProcedure.query(async () => {
+      return getDownloadDistribution();
+    }),
+
+    // Get daily download trend
+    dailyTrend: publicProcedure.query(async () => {
+      return generateDailyDownloadTrend();
+    }),
+
+    // Get all books with stats
+    allBooksStats: publicProcedure.query(async () => {
+      return getAllBooksWithStats();
+    }),
+  }),
 
   auth: router({
     me: publicProcedure.query((opts) => opts.ctx.user),

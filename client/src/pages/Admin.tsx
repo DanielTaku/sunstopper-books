@@ -10,10 +10,11 @@ import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import {
   BookOpen, Upload, Trash2, Edit3, X, Check, Plus,
-  FileText, Image, ArrowLeft, Loader2, Star, StarOff
+  FileText, Image, ArrowLeft, Loader2, Star, StarOff, BarChart3
 } from "lucide-react";
 import { Link } from "wouter";
 import type { DbBook } from "@/components/BookCard";
+import AnalyticsDashboard from "@/components/AnalyticsDashboard";
 
 const CATEGORIES = [
   "Spiritual Guidance",
@@ -402,12 +403,13 @@ function BookRow({ book, onDeleted }: { book: DbBook; onDeleted: () => void }) {
 // ── Admin Page ────────────────────────────────────────────────────────────────
 
 export default function Admin() {
-  const { user, loading } = useAuth();
+  const { user } = useAuth();
   const [showUpload, setShowUpload] = useState(false);
+  const [activeTab, setActiveTab] = useState<'books' | 'analytics'>('books');
   const utils = trpc.useUtils();
   const { data: books = [], isLoading: booksLoading, refetch } = trpc.books.list.useQuery();
 
-  if (loading) {
+  if (booksLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[oklch(0.97_0.015_85)]">
         <Loader2 className="w-8 h-8 animate-spin text-[oklch(0.72_0.12_75)]" />
@@ -472,18 +474,60 @@ export default function Admin() {
         </div>
         <div className="flex items-center gap-3">
           <span className="text-[oklch(0.72_0.12_75)] text-xs font-body">{user.name ?? user.email}</span>
-          <button
-            onClick={() => setShowUpload(!showUpload)}
-            className="download-btn px-4 py-2 rounded text-sm flex items-center gap-1.5"
-          >
-            {showUpload ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
-            {showUpload ? "Close" : "Add Book"}
-          </button>
+          {activeTab === 'books' && (
+            <button
+              onClick={() => setShowUpload(!showUpload)}
+              className="download-btn px-4 py-2 rounded text-sm flex items-center gap-1.5"
+            >
+              {showUpload ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+              {showUpload ? "Close" : "Add Book"}
+            </button>
+          )}
         </div>
       </header>
 
+      {/* Tabs */}
+      <div className="border-b border-[oklch(0.87_0.025_80)] bg-white">
+        <div className="max-w-6xl mx-auto px-4 lg:px-8 flex gap-8">
+          <button
+            onClick={() => { setActiveTab('books'); setShowUpload(false); }}
+            className={`py-4 px-2 font-body text-sm font-medium border-b-2 transition-colors ${
+              activeTab === 'books'
+                ? 'border-[oklch(0.72_0.12_75)] text-[oklch(0.72_0.12_75)]'
+                : 'border-transparent text-[oklch(0.55_0.025_80)] hover:text-[oklch(0.72_0.12_75)]'
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              <BookOpen className="w-4 h-4" />
+              Books
+            </div>
+          </button>
+          <button
+            onClick={() => { setActiveTab('analytics'); setShowUpload(false); }}
+            className={`py-4 px-2 font-body text-sm font-medium border-b-2 transition-colors ${
+              activeTab === 'analytics'
+                ? 'border-[oklch(0.72_0.12_75)] text-[oklch(0.72_0.12_75)]'
+                : 'border-transparent text-[oklch(0.55_0.025_80)] hover:text-[oklch(0.72_0.12_75)]'
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              <BarChart3 className="w-4 h-4" />
+              Analytics
+            </div>
+          </button>
+        </div>
+      </div>
+
       <div className="max-w-6xl mx-auto px-4 lg:px-8 py-8">
-        {/* Upload Form */}
+        {/* Analytics Tab */}
+        {activeTab === 'analytics' && (
+          <AnalyticsDashboard />
+        )}
+
+        {/* Books Tab */}
+        {activeTab === 'books' && (
+          <>
+            {/* Upload Form */}
         {showUpload && (
           <div className="bg-white rounded-xl border border-[oklch(0.87_0.025_80)] shadow-md p-6 mb-8">
             <div className="flex items-center gap-2 mb-6">
@@ -560,6 +604,8 @@ export default function Admin() {
             </div>
           )}
         </div>
+          </>
+        )}
       </div>
     </div>
   );
